@@ -12,13 +12,15 @@ class Base(DeclarativeBase):
 engine = create_engine('sqlite:///home_accounting.db')
 session = sessionmaker(bind=engine)()
 
-# Creating tables
+## Creating tables
 
+# User table
 class User_(Base):
     __tablename__ = "user"
     id = mapped_column(Integer, primary_key=True)
     first_name = mapped_column(String(50), nullable=False)
     last_name = mapped_column(String(50), nullable=False)
+    listings = relationship("Listing_", back_populates="user")
 
     def __init__(self, **kw: Any):
         # super().__init__(**kw)
@@ -29,17 +31,29 @@ class User_(Base):
         return f"({self.id}, {self.first_name}, {self.last_name})"
     
 
+# Listings table
+class Listing_(Base):
+    __tablename__ = "listing_"
+    id = mapped_column(Integer, primary_key=True)
+    amount = mapped_column(String(50), nullable=False)
+    comment = mapped_column(String(150), nullable=False, default="")
+    date_ = mapped_column(DateTime, default=datetime.today)
+    user_id = mapped_column(Integer, ForeignKey("user.id"))
+    user = relationship("User_", back_populates="listing_")
+
+    def __init__(self, **kw: Any):
+        # super().__init__(**kw)
+        for key, value in kw.items():
+            setattr(self, key, value)
+
+    def __repr__(self):
+        return f"({self.id}, {self.amount}, {self.comment}, {self.date_})"
+    
+
 
 Base.metadata.create_all(engine)
 
-# class Operation_(Base):
-#     __tablename__ = "user"
-#     id = mapped_column(Integer, primary_key=True)
-#     first_name = mapped_column("first_name", String(50))
-#     last_name = mapped_column("last_name", String(50))
 
-#     def __repr__(self):
-#         return f"({self.id}, {self.first_name}, {self.last_name})"
 
 ###### Actions with db tables
 
