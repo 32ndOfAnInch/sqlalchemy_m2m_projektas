@@ -20,12 +20,13 @@ class User_(Base):
     id = mapped_column(Integer, primary_key=True)
     first_name = mapped_column(String(50), nullable=False)
     last_name = mapped_column(String(50), nullable=False)
-    listings = relationship("Listing_")
+    listings = relationship("Listing_", back_populates="user")
 
-    def __init__(self, **kw: Any):
-        # super().__init__(**kw)
-        for key, value in kw.items():
-            setattr(self, key, value)
+    ## sito nereikia kai yra Base
+    # def __init__(self, **kw: Any):
+    #     # super().__init__(**kw)
+    #     for key, value in kw.items():
+    #         setattr(self, key, value)
 
     def __repr__(self):
         return f"({self.id}, {self.first_name}, {self.last_name})"
@@ -39,17 +40,19 @@ class Listing_(Base):
     comment = mapped_column(String(150), nullable=False, default="")
     date_ = mapped_column(DateTime, default=datetime.today().replace(microsecond=0))
     user_id = mapped_column(Integer, ForeignKey("user.id"))
-    user = relationship("User_")
+    user = relationship("User_", back_populates="listings")
 
-    def __init__(self, **kw: Any):
-        # super().__init__(**kw)
-        for key, value in kw.items():
-            setattr(self, key, value)
+
+    ## sito nereikia kai yra Base
+    # def __init__(self, **kw: Any):
+    #     # super().__init__(**kw)
+    #     for key, value in kw.items():
+    #         setattr(self, key, value)
 
     def __repr__(self):
         return f"({self.id}, {self.amount}, {self.comment}, {self.date_})"
 
-    
+# , back_populates="listing_" - su situo meto erorus
 
 
 Base.metadata.create_all(engine)
