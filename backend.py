@@ -20,7 +20,7 @@ class User_(Base):
     id = mapped_column(Integer, primary_key=True)
     first_name = mapped_column(String(50), nullable=False)
     last_name = mapped_column(String(50), nullable=False)
-    listings = relationship("Listing_", back_populates="user")
+    listings = relationship("Listing_")
 
     def __init__(self, **kw: Any):
         # super().__init__(**kw)
@@ -31,23 +31,26 @@ class User_(Base):
         return f"({self.id}, {self.first_name}, {self.last_name})"
     
 
-# Listings table
-class Listing_(Base):
-    __tablename__ = "listing_"
-    id = mapped_column(Integer, primary_key=True)
-    amount = mapped_column(String(50), nullable=False)
-    comment = mapped_column(String(150), nullable=False, default="")
-    date_ = mapped_column(DateTime, default=datetime.today)
-    user_id = mapped_column(Integer, ForeignKey("user.id"))
-    user = relationship("User_", back_populates="listing_")
+#Listings table
+try:
+    class Listing_(Base):
+        __tablename__ = "listing_"
+        id = mapped_column(Integer, primary_key=True)
+        amount = mapped_column(String(50), nullable=False)
+        comment = mapped_column(String(150), nullable=False, default="")
+        date_ = mapped_column(DateTime, default=datetime.today().replace(microsecond=0))
+        user_id = mapped_column(Integer, ForeignKey("user.id"))
+        #user = relationship("User_", back_populates="listing_")
 
-    def __init__(self, **kw: Any):
-        # super().__init__(**kw)
-        for key, value in kw.items():
-            setattr(self, key, value)
+        def __init__(self, **kw: Any):
+            # super().__init__(**kw)
+            for key, value in kw.items():
+                setattr(self, key, value)
 
-    def __repr__(self):
-        return f"({self.id}, {self.amount}, {self.comment}, {self.date_})"
+        def __repr__(self):
+            return f"({self.id}, {self.amount}, {self.comment}, {self.date_})"
+except Exception as e:
+    print(f"ERROROROROROROOROOROROROOR {e}")
     
 
 
@@ -78,11 +81,31 @@ def delete_user(session, delete_id):
     except Exception as e:
         print(f"Error: {e}")
 
-def select_user_list(session, row_value):
-    users = session.query(User_).all()
-    users_list = [
+def select_from_user_list_table(session, row_value):
+    items = session.query(User_).all()
+    items_list = [
                 [item.id, item.first_name, item.last_name]
-                for item in users
+                for item in items
             ]
-    return users_list[row_value]
+    return items_list[row_value]
 
+def select_from_user_listings_table(session, row_value, user_id_n):
+    items = session.query(Listing_).filter_by(user_id=user_id_n)
+    items_list = [
+                [item.id, item.amount, item.comment, item.date_]
+                for item in items
+            ]
+    return items_list[row_value]
+
+def insert_new_record(amount_n, comment_n, user_id_n):
+    items = Listing_(amount=amount_n, comment=comment_n, user_id=user_id_n)
+    session.add(items)
+    session.commit()
+
+def query_user_items(session, user_id_n):
+    items = session.query(Listing_).filter_by(user_id=user_id_n)
+    items_list = [
+                [item.id, item.amount, item.comment, item.date_]
+                for item in items
+            ]
+    return items_list

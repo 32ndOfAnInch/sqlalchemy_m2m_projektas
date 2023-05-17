@@ -19,24 +19,24 @@ class Base(DeclarativeBase):
 layout_left = [[sg.Button("Select User", key="-SELECT_USER-", button_color="#23277b", pad=10, size=(25, 1), font=20)],
           [sg.Button("New User", key="-NEW_USER-", button_color="#7a223f", pad=10, size=(25, 1), font=20)],
           [sg.Button("Delete User", key="-DELETE_USER-", button_color="#7a223f", pad=10, size=(25, 1), font=20)],
-          [sg.Button("Nustatymai", key="-atleisti-", button_color="#7a223f", pad=10, size=(25, 1), font=20)],
+          [sg.Button("Edit User Info", key="-EDIT_USER-", button_color="#7a223f", pad=10, size=(25, 1), font=20)],
           [sg.Button("Show General Accounting", key="-SHOW_G_ACC-", button_color="#7a223f", pad=10, size=(25, 1), font=20)],
           [sg.Text("", pad=(10, 90))],
           [sg.Text("", pad=(10, 90))],
           [sg.Button("Exit program", key="-EXIT-", button_color="#23277b", pad=(10, 10), size=(25, 1), font=20)]]
 
 user_list = []
+user_items_list = []
 user_list_headings = ['ID', 'First Name', 'Last Name']
-darbuotojai_list = []
-headings = ['ID', 'Vartotojas', 'Tipas', 'Suma', 'Paskirtis', 'Komentaras', 'Data']
-headings_vart = ['ID', 'Vardas', 'Pavarde']
+headings_user = ['ID', 'TipasVeliau', 'Amount', 'PaskirtisVeliau', 'Comment', 'Data']
 
-layout_user_table = [[sg.Table(values=darbuotojai_list, headings=headings,
+
+layout_user_table = [[sg.Table(values=user_items_list, headings=headings_user,
                     auto_size_columns=True,
                     display_row_numbers=False,
                     justification='left',
                     num_rows=11,
-                    key='-TABLE-',
+                    key='-USER_ITEMS_TABLE-',
                     row_height=32,
                     enable_events=True,
                     alternating_row_color="#460c1f",
@@ -44,16 +44,17 @@ layout_user_table = [[sg.Table(values=darbuotojai_list, headings=headings,
                     font=20,
                     selected_row_colors="white on black"
                     )],
-            [sg.Text('ID', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-ID-', pad=(0, 10), font=20, disabled=True),
-             sg.Button("Irasyti islaidas", key="-irasyti-", button_color="#23277b", pad=10, size=(25, 1), font=20)],
-            [sg.Text('Suma', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-VARDAS-', pad=(0, 10), font=20), 
+            [sg.Text('ID', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_ID-', pad=(0, 10), font=20, disabled=True),
+             sg.Text('Type', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_TYPE-', pad=(0, 10), font=20, disabled=True)],
+            [sg.Text('Amount', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_AMOUNT-', pad=(0, 10), font=20), 
              sg.Button("Irasyti pajamas", key="-redaguoti-", button_color="#23277b", pad=10, size=(25, 1), font=20)],
-            [sg.Text('Paskirtis', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-PAVARDE-', pad=(0, 10), font=20),
+            [sg.Text('Category', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_CATEGORY-', pad=(0, 10), font=20),
              sg.Button("Istrinti irasa", key="-redaguoti-", button_color="#23277b", pad=10, size=(25, 1), font=20)],
-            [sg.Text('Komentaras', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-GIMIMAS-', pad=(0, 10), font=20)],
-            [sg.Text('Data', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-PAREIGOS-', pad=(0, 10), font=20)],
+            [sg.Text('Comment', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_COMMENT-', pad=(0, 10), font=20)],
+            [sg.Text('Date', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_DATE-', pad=(0, 10), font=20)],
             [sg.Button("Isvalyti laukus", key="-CLEAR-", button_color="#23277b", pad=(10, 10), size=(25, 1), font=20)],
-            [sg.Button("Uzdaryti lentele", key="-close-", button_color="#23277b", pad=10, size=(25, 1), font=20)]
+            [sg.Button("Uzdaryti lentele", key="-close-", button_color="#23277b", pad=10, size=(25, 1), font=20),
+             sg.Button("Create a Record", key="-NEW_RECORD-", button_color="#23277b", pad=10, size=(25, 1), font=20)]
     ]
 
 layout_select_user = [[sg.Table(values=user_list, headings=user_list_headings,
@@ -115,14 +116,18 @@ def refresh_delete_table():
     user_list = bke.query_user(session)
     window['-USER_DELETE_TABLE-'].update(values=user_list)
 
-# isvalyti laukelius
-# def clear_inputs():
-#     window['-ID-'].update(value="")
-#     window['-VARDAS-'].update(value="")
-#     window['-PAVARDE-'].update(value="")
-#     window['-GIMIMAS-'].update(value="")
-#     window['-PAREIGOS-'].update(value="")
-#     window['-ATLYGINIMAS-'].update(value="")
+def refresh_listings_table():
+    user_items_list = bke.query_user_items(session)
+    window['-USER_ITEMS_TABLE-'].update(values=user_items_list)
+
+def clear_layout_user_table_inputs():
+    window['-USER_TABLE_ID-'].update(value="")
+    window['-USER_TABLE_TYPE-'].update(value="")
+    window['-USER_TABLE_AMOUNT-'].update(value="")
+    window['-USER_TABLE_CATEGORY-'].update(value="")
+    window['-USER_TABLE_COMMENT-'].update(value="")
+    window['-USER_TABLE_DATE-'].update(value="")
+
 
 layout = [[sg.Col(layout_left, p=0, key="_LEFT_SIDE_LAYOUT_"), 
            sg.Col(layout_user_table, p=0, visible=False, key="-USER_TABLE_LAYOUT-"), 
@@ -130,38 +135,15 @@ layout = [[sg.Col(layout_left, p=0, key="_LEFT_SIDE_LAYOUT_"),
            sg.Col(layout_new_user, p=0, visible=False, key="-NEW_USER_LAYOUT-"),
            sg.Col(layout_delete_user, p=0, visible=False, key="-DELETE_USER_LAYOUT-")]]
 
-window = sg.Window("Home Accounting", layout, size=(1000, 780))
+window = sg.Window("Home Accounting", layout, size=(1280, 720))
 
 while True:
     event, values = window.read()
 
-    if event == "-USER_LIST_TABLE-":
-        try:
-            row_value = values['-USER_LIST_TABLE-'][0]
-            values = bke.select_user_list(session, row_value)
-            window['-USER_LIST_ID-'].update(value=values[0])
-            window['-USER_LIST_F_NAME-'].update(value=values[1])
-            window['-USER_LIST_L_NAME-'].update(value=values[2])
-        except:
-            pass
-
-    if event == "-SELECT_USER-":
-        close_all_right_windows()
-        window["-SELECT_USER_LAYOUT-"].update(visible=True)
-        user_list = bke.query_user(session)
-        window['-USER_LIST_TABLE-'].update(values=user_list)
-
-    if event == "-SELECT_USER_FROM_LIST-":
-        select_user_id = window['-USER_LIST_ID-'].get()
-        print(select_user_id)
-
     if event == "-NEW_USER-":
         close_all_right_windows()
+        clear_layout_user_table_inputs()
         window["-NEW_USER_LAYOUT-"].update(visible=True)
-        #
-        # window["-COL3-"].update(visible=False)
-        # window["-COL2-"].update(visible=True)
-        # window['-TABLE-'].update(values=darbuotojai_list)
 
     if event == "-CREATE_USER-":
         first_name = window['-NEW_F_NAME-'].get()
@@ -169,12 +151,10 @@ while True:
         bke.create_user(first_name, last_name)
         window["-NEW_USER_LAYOUT-"].update(visible=False)
 
-    # if event == "-USER_DELETE_TABLE-":
-    #     row_value = values['-USER_DELETE_TABLE-'][0]
-    #     values_ = bke.select_user_list(session, row_value)
 
     if event == "-DELETE_USER-":
         close_all_right_windows()
+        clear_layout_user_table_inputs()
         window["-DELETE_USER_LAYOUT-"].update(visible=True)
         user_list = bke.query_user(session)
         window['-USER_DELETE_TABLE-'].update(values=user_list)
@@ -185,11 +165,35 @@ while True:
             bke.delete_user(session, del_id)
             refresh_delete_table()
             sg.popup_notify(f"User (ID: {del_id}) and their records are successfully deleted from list")
-        except:
+        except Exception as e:
+            print(e)
             pass
-    # if event == "-USER_LIST_TABLE-":
-    #     row_value = values['-USER_LIST_TABLE-'][0]
-    #     values_ = bke.select_user_list(session, row_value)
+
+
+    if event == "-USER_LIST_TABLE-":
+        try:
+            row_value = values['-USER_LIST_TABLE-'][0]
+            values = bke.select_from_user_list_table(session, row_value)
+            window['-USER_LIST_ID-'].update(value=values[0])
+            window['-USER_LIST_F_NAME-'].update(value=values[1])
+            window['-USER_LIST_L_NAME-'].update(value=values[2])
+        except Exception as e:
+            print(e)
+            pass
+
+    if event == "-SELECT_USER-":
+        close_all_right_windows()
+        clear_layout_user_table_inputs()
+        window["-SELECT_USER_LAYOUT-"].update(visible=True)
+        user_list = bke.query_user(session)
+        window['-USER_LIST_TABLE-'].update(values=user_list)
+
+    if event == "-SELECT_USER_FROM_LIST-":
+        select_user_id = window['-USER_LIST_ID-'].get()
+        close_all_right_windows()
+        window["-USER_TABLE_LAYOUT-"].update(visible=True)
+        user_items_list = bke.query_user_items(session, select_user_id)
+        window["-USER_ITEMS_TABLE-"].update(values=user_items_list)
  
     if event == "-CLOSE-":
         close_all_right_windows()
@@ -200,12 +204,26 @@ while True:
     if event == "-CLOSE3-":
         close_all_right_windows()
 
-    if event == "-TABLE-":
-        pass
+    if event == "-USER_ITEMS_TABLE-":
+        try:
+            row_value = values['-USER_ITEMS_TABLE-'][0]
+            values_user_table = bke.select_from_user_listings_table(session, row_value, select_user_id)
+            window['-USER_TABLE_ID-'].update(value=values_user_table[0])
+            window['-USER_TABLE_TYPE-'].update(value="PLACEHOLDER")
+            window['-USER_TABLE_AMOUNT-'].update(value=values_user_table[1])
+            window['-USER_TABLE_CATEGORY-'].update(value="PLACEHOLDER")
+            window['-USER_TABLE_COMMENT-'].update(value=values_user_table[2])
+            window['-USER_TABLE_DATE-'].update(value=values_user_table[3])
+        except IndexError:
+            pass
     
 
-    if event == "-irasyti-":
-        pass
+    if event == "-NEW_RECORD-":
+        amount = window['-USER_TABLE_AMOUNT-'].get()
+        comment = window['-USER_TABLE_COMMENT-'].get()
+        bke.insert_new_record(amount, comment, select_user_id)
+        refresh_listings_table()
+        clear_layout_user_table_inputs()
 
     if event == "-redaguoti-":
         pass
