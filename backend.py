@@ -32,25 +32,23 @@ class User_(Base):
     
 
 #Listings table
-try:
-    class Listing_(Base):
-        __tablename__ = "listing_"
-        id = mapped_column(Integer, primary_key=True)
-        amount = mapped_column(String(50), nullable=False)
-        comment = mapped_column(String(150), nullable=False, default="")
-        date_ = mapped_column(DateTime, default=datetime.today().replace(microsecond=0))
-        user_id = mapped_column(Integer, ForeignKey("user.id"))
-        #user = relationship("User_", back_populates="listing_")
+class Listing_(Base):
+    __tablename__ = "listing_"
+    id = mapped_column(Integer, primary_key=True)
+    amount = mapped_column(String(50), nullable=False)
+    comment = mapped_column(String(150), nullable=False, default="")
+    date_ = mapped_column(DateTime, default=datetime.today().replace(microsecond=0))
+    user_id = mapped_column(Integer, ForeignKey("user.id"))
+    user = relationship("User_")
 
-        def __init__(self, **kw: Any):
-            # super().__init__(**kw)
-            for key, value in kw.items():
-                setattr(self, key, value)
+    def __init__(self, **kw: Any):
+        # super().__init__(**kw)
+        for key, value in kw.items():
+            setattr(self, key, value)
 
-        def __repr__(self):
-            return f"({self.id}, {self.amount}, {self.comment}, {self.date_})"
-except Exception as e:
-    print(f"ERROROROROROROOROOROROROOR {e}")
+    def __repr__(self):
+        return f"({self.id}, {self.amount}, {self.comment}, {self.date_})"
+
     
 
 
@@ -106,6 +104,14 @@ def query_user_items(session, user_id_n):
     items = session.query(Listing_).filter_by(user_id=user_id_n)
     items_list = [
                 [item.id, item.amount, item.comment, item.date_]
+                for item in items
+            ]
+    return items_list
+
+def query_all_items(session):
+    items = session.query(Listing_).join(User_).all()
+    items_list = [
+                [item.id, item.user.first_name, item.amount, item.comment, item.date_]
                 for item in items
             ]
     return items_list

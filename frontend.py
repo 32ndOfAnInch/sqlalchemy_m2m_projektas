@@ -27,8 +27,10 @@ layout_left = [[sg.Button("Select User", key="-SELECT_USER-", button_color="#232
 
 user_list = []
 user_items_list = []
+general_items_list = []
 user_list_headings = ['ID', 'First Name', 'Last Name']
 headings_user = ['ID', 'TipasVeliau', 'Amount', 'PaskirtisVeliau', 'Comment', 'Data']
+headings_general = ['ID', 'User Name', 'TipasVeliau', 'Amount', 'PaskirtisVeliau', 'Comment', 'Data']
 
 
 layout_user_table = [[sg.Table(values=user_items_list, headings=headings_user,
@@ -55,6 +57,32 @@ layout_user_table = [[sg.Table(values=user_items_list, headings=headings_user,
             [sg.Button("Isvalyti laukus", key="-CLEAR-", button_color="#23277b", pad=(10, 10), size=(25, 1), font=20)],
             [sg.Button("Uzdaryti lentele", key="-close-", button_color="#23277b", pad=10, size=(25, 1), font=20),
              sg.Button("Create a Record", key="-NEW_RECORD-", button_color="#23277b", pad=10, size=(25, 1), font=20)]
+    ]
+
+layout_general_table = [[sg.Table(values=user_items_list, headings=headings_general,
+                    auto_size_columns=True,
+                    display_row_numbers=False,
+                    justification='left',
+                    num_rows=11,
+                    key='-GENERAL_ITEMS_TABLE-',
+                    row_height=32,
+                    enable_events=True,
+                    alternating_row_color="#460c1f",
+                    background_color="#271d20",
+                    font=20,
+                    selected_row_colors="white on black"
+                    )],
+            [sg.Text('ID', size=10, font=20), sg.Input(default_text="", enable_events=True, key='', pad=(0, 10), font=20, disabled=True),
+             sg.Text('Type', size=10, font=20), sg.Input(default_text="", enable_events=True, key='', pad=(0, 10), font=20, disabled=True)],
+            [sg.Text('Amount', size=10, font=20), sg.Input(default_text="", enable_events=True, key='', pad=(0, 10), font=20), 
+             sg.Button("Irasyti pajamas", key="", button_color="#23277b", pad=10, size=(25, 1), font=20)],
+            [sg.Text('Category', size=10, font=20), sg.Input(default_text="", enable_events=True, key='', pad=(0, 10), font=20),
+             sg.Button("Istrinti irasa", key="", button_color="#23277b", pad=10, size=(25, 1), font=20)],
+            [sg.Text('Comment', size=10, font=20), sg.Input(default_text="", enable_events=True, key='', pad=(0, 10), font=20)],
+            [sg.Text('Date', size=10, font=20), sg.Input(default_text="", enable_events=True, key='', pad=(0, 10), font=20)],
+            [sg.Button("Isvalyti laukus", key="", button_color="#23277b", pad=(10, 10), size=(25, 1), font=20)],
+            [sg.Button("Uzdaryti lentele", key="", button_color="#23277b", pad=10, size=(25, 1), font=20),
+             sg.Button("Create a Record", key="", button_color="#23277b", pad=10, size=(25, 1), font=20)]
     ]
 
 layout_select_user = [[sg.Table(values=user_list, headings=user_list_headings,
@@ -104,9 +132,11 @@ layout_delete_user = [[sg.Table(values=user_list, headings=user_list_headings,
 
 def close_all_right_windows():
     window["-NEW_USER_LAYOUT-"].update(visible=False)
+    window["-GENERAL_TABLE_LAYOUT-"].update(visible=False)
     window["-SELECT_USER_LAYOUT-"].update(visible=False)
     window["-USER_TABLE_LAYOUT-"].update(visible=False)
     window["-DELETE_USER_LAYOUT-"].update(visible=False)
+    
 
 def refresh_user_table():
     user_list = bke.query_user(session)
@@ -117,7 +147,7 @@ def refresh_delete_table():
     window['-USER_DELETE_TABLE-'].update(values=user_list)
 
 def refresh_listings_table():
-    user_items_list = bke.query_user_items(session)
+    user_items_list = bke.query_user_items(session, saved_user_id)
     window['-USER_ITEMS_TABLE-'].update(values=user_items_list)
 
 def clear_layout_user_table_inputs():
@@ -130,7 +160,8 @@ def clear_layout_user_table_inputs():
 
 
 layout = [[sg.Col(layout_left, p=0, key="_LEFT_SIDE_LAYOUT_"), 
-           sg.Col(layout_user_table, p=0, visible=False, key="-USER_TABLE_LAYOUT-"), 
+           sg.Col(layout_user_table, p=0, visible=False, key="-USER_TABLE_LAYOUT-"),
+           sg.Col(layout_general_table, p=0, visible=False, key="-GENERAL_TABLE_LAYOUT-"), 
            sg.Col(layout_select_user, p=0, visible=False, key="-SELECT_USER_LAYOUT-"),
            sg.Col(layout_new_user, p=0, visible=False, key="-NEW_USER_LAYOUT-"),
            sg.Col(layout_delete_user, p=0, visible=False, key="-DELETE_USER_LAYOUT-")]]
@@ -190,9 +221,10 @@ while True:
 
     if event == "-SELECT_USER_FROM_LIST-":
         select_user_id = window['-USER_LIST_ID-'].get()
+        saved_user_id = select_user_id
         close_all_right_windows()
         window["-USER_TABLE_LAYOUT-"].update(visible=True)
-        user_items_list = bke.query_user_items(session, select_user_id)
+        user_items_list = bke.query_user_items(session, saved_user_id)
         window["-USER_ITEMS_TABLE-"].update(values=user_items_list)
  
     if event == "-CLOSE-":
@@ -207,7 +239,7 @@ while True:
     if event == "-USER_ITEMS_TABLE-":
         try:
             row_value = values['-USER_ITEMS_TABLE-'][0]
-            values_user_table = bke.select_from_user_listings_table(session, row_value, select_user_id)
+            values_user_table = bke.select_from_user_listings_table(session, row_value, saved_user_id)
             window['-USER_TABLE_ID-'].update(value=values_user_table[0])
             window['-USER_TABLE_TYPE-'].update(value="PLACEHOLDER")
             window['-USER_TABLE_AMOUNT-'].update(value=values_user_table[1])
@@ -221,12 +253,16 @@ while True:
     if event == "-NEW_RECORD-":
         amount = window['-USER_TABLE_AMOUNT-'].get()
         comment = window['-USER_TABLE_COMMENT-'].get()
-        bke.insert_new_record(amount, comment, select_user_id)
+        bke.insert_new_record(amount, comment, saved_user_id)
         refresh_listings_table()
         clear_layout_user_table_inputs()
 
-    if event == "-redaguoti-":
-        pass
+    if event == "-SHOW_G_ACC-":
+        close_all_right_windows()
+        window["-GENERAL_TABLE_LAYOUT-"].update(visible=True)
+        general_items_list = bke.query_all_items(session)
+        window["-GENERAL_ITEMS_TABLE-"].update(values=general_items_list)
+
 
     if event == "-CLEAR-":
         pass
