@@ -15,6 +15,7 @@ session = sessionmaker(bind=engine)()
 class Base(DeclarativeBase):
     pass
 
+
 # jei iseis padaryti dali funkcionalumo meniu eiluteje virsuje, pvz ten idet exit
 layout_left = [[sg.Button("Select User", key="-SELECT_USER-", button_color="#23277b", pad=10, size=(25, 1), font=20)],
           [sg.Button("New User", key="-NEW_USER-", button_color="#7a223f", pad=10, size=(25, 1), font=20)],
@@ -28,7 +29,7 @@ layout_left = [[sg.Button("Select User", key="-SELECT_USER-", button_color="#232
 user_list = []
 user_items_list = []
 general_items_list = []
-user_list_headings = ['ID', 'First Name', 'Last Name']
+user_list_headings = ['ID', 'First Name', 'Last Name', "Username"]
 headings_user = ['ID', 'TipasVeliau', 'Amount', 'PaskirtisVeliau', 'Comment', 'Data']
 headings_general = ['ID', 'User Name', 'TipasVeliau', 'Amount', 'PaskirtisVeliau', 'Comment', 'Data']
 
@@ -101,12 +102,14 @@ layout_select_user = [[sg.Table(values=user_list, headings=user_list_headings,
             [sg.Text('User ID', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_LIST_ID-', pad=(0, 10), font=20, disabled=True)],
             [sg.Text('First Name', size=10, font=20), sg.Input(default_text="", key='-USER_LIST_F_NAME-', pad=(0, 10), font=20, disabled=True)],
             [sg.Text('Last Name', size=10, font=20), sg.Input(default_text="", key='-USER_LIST_L_NAME-', pad=(0, 10), font=20, disabled=True)],
+            [sg.Text('User Name', size=10, font=20), sg.Input(default_text="", key='-USER_LIST_USER_NAME-', pad=(0, 10), font=20, disabled=True)],
             [sg.Button("Select User", key="-SELECT_USER_FROM_LIST-", button_color="#23277b", pad=10, size=(25, 1), font=20),
              sg.Button("Cancel", key="-CLOSE-", button_color="#23277b", pad=10, size=(25, 1), font=20)]
 ]
 
 layout_new_user = [[sg.Text('First Name', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-NEW_F_NAME-', pad=(0, 10), font=20)],
             [sg.Text('Last Name', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-NEW_L_NAME-', pad=(0, 10), font=20)],
+            [sg.Text('User Name', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-NEW_USER_NAME-', pad=(0, 10), font=20)],
             [sg.Button("Create User", key="-CREATE_USER-", button_color="#23277b", pad=(10, 10), size=(25, 1), font=20),
              sg.Button("Cancel", key="-CLOSE2-", button_color="#23277b", pad=10, size=(25, 1), font=20)]
 ]
@@ -179,7 +182,8 @@ while True:
     if event == "-CREATE_USER-":
         first_name = window['-NEW_F_NAME-'].get()
         last_name = window['-NEW_L_NAME-'].get()
-        bke.create_user(first_name, last_name)
+        user_name = window['-NEW_USER_NAME-'].get()
+        bke.create_user(first_name, last_name, user_name)
         window["-NEW_USER_LAYOUT-"].update(visible=False)
 
 
@@ -208,6 +212,7 @@ while True:
             window['-USER_LIST_ID-'].update(value=values[0])
             window['-USER_LIST_F_NAME-'].update(value=values[1])
             window['-USER_LIST_L_NAME-'].update(value=values[2])
+            window['-USER_LIST_USER_NAME-'].update(value=values[3])
         except Exception as e:
             print(e)
             pass

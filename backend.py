@@ -23,7 +23,7 @@ class User(Base):
     user_name = mapped_column(String(50), nullable=False)
     operation = relationship("Operation", back_populates="user")
 
-    ## sito nereikia kai yra Base
+    ## Not nessesary if Base used
     # def __init__(self, **kw: Any):
     #     # super().__init__(**kw)
     #     for key, value in kw.items():
@@ -45,7 +45,7 @@ class Operation(Base):
     purpose_id = mapped_column(Integer, ForeignKey("purpose.id"))
     user = relationship("User", back_populates="operation")
     type = relationship("Type", back_populates="operation")
-    purpose = relationship("Purpose", back_populates="operation")
+    category = relationship("Category", back_populates="operation")
 
     def __repr__(self):
         return f"({self.id}, {self.amount}, {self.comment}, {self.date_})"
@@ -57,16 +57,22 @@ class Type(Base):
     id = mapped_column(Integer, primary_key=True)
     operation_type = mapped_column(String(20), default="") # earnings or spendings
     operation = relationship("Operation", back_populates="type")
-    purpose = relationship("Purpose", back_populates="type")
+    category = relationship("Category", back_populates="type")
+
+    def __repr__(self):
+        return f"({self.id}, {self.operation_type})"
 
 # Purpose table
-class Purpose(Base):
-    __tablename__ = "purpose"
+class Category(Base):
+    __tablename__ = "category"
     id = mapped_column(Integer, primary_key=True)
-    operation_purpose = mapped_column(String(50), default="")
+    operation_category = mapped_column(String(50), default="")
     type_id = mapped_column(Integer, ForeignKey("type.id"))
-    type = relationship("Type", back_populates="purpose")
-    operation = relationship("Operation", back_populates="purpose")
+    type = relationship("Type", back_populates="category")
+    operation = relationship("Operation", back_populates="category")
+
+    def __repr__(self):
+        return f"({self.id}, {self.operation_category})"
 
 
 Base.metadata.create_all(engine)
@@ -75,16 +81,25 @@ Base.metadata.create_all(engine)
 
 ###### Actions with db tables
 
+
+def populate_type_db_table(session):
+    earnings = Type(operation_type="Earnings")
+    expenses = Type(operation_type="Expenses")
+    session.add(earnings)
+    session.add(expenses)
+    session.commit()
+
+
 def query_user(session):
     users = session.query(User).all()
     users_list = [
-                [item.id, item.first_name, item.last_name]
+                [item.id, item.first_name, item.last_name, item.user_name]
                 for item in users
             ]
     return users_list
 
-def create_user(f_name, l_name):
-    customer = User(first_name=f_name, last_name=l_name)
+def create_user(f_name, l_name, u_name):
+    customer = User(first_name=f_name, last_name=l_name, user_name=u_name)
     session.add(customer)
     session.commit()
 
@@ -99,7 +114,7 @@ def delete_user(session, delete_id):
 def select_from_user_list_table(session, row_value):
     items = session.query(User).all()
     items_list = [
-                [item.id, item.first_name, item.last_name]
+                [item.id, item.first_name, item.last_name, item.user_name]
                 for item in items
             ]
     return items_list[row_value]
