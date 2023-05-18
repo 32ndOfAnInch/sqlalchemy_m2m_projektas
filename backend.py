@@ -33,7 +33,7 @@ class User(Base):
         return f"({self.id}, {self.first_name}, {self.last_name}, {self.user_name})"
     
 
-#Operation table
+# Operation table
 class Operation(Base):
     __tablename__ = "operation"
     id = mapped_column(Integer, primary_key=True)
@@ -42,7 +42,7 @@ class Operation(Base):
     date_ = mapped_column(DateTime, default=datetime.today().replace(microsecond=0))
     user_id = mapped_column(Integer, ForeignKey("user.id"))
     type_id = mapped_column(Integer, ForeignKey("type.id"))
-    purpose_id = mapped_column(Integer, ForeignKey("purpose.id"))
+    category_id = mapped_column(Integer, ForeignKey("category.id"))
     user = relationship("User", back_populates="operation")
     type = relationship("Type", back_populates="operation")
     category = relationship("Category", back_populates="operation")
@@ -51,18 +51,18 @@ class Operation(Base):
         return f"({self.id}, {self.amount}, {self.comment}, {self.date_})"
 
 
-# Type table
+# Type table (earnings and spendings)
 class Type(Base):
     __tablename__ = "type"
     id = mapped_column(Integer, primary_key=True)
-    operation_type = mapped_column(String(20), default="") # earnings or spendings
+    operation_type = mapped_column(String(20), default="") # earnings and spendings
     operation = relationship("Operation", back_populates="type")
     category = relationship("Category", back_populates="type")
 
     def __repr__(self):
         return f"({self.id}, {self.operation_type})"
 
-# Purpose table
+# Category table (taxes, grocery store spendings, fuel etc.)
 class Category(Base):
     __tablename__ = "category"
     id = mapped_column(Integer, primary_key=True)
@@ -127,9 +127,11 @@ def select_from_user_listings_table(session, row_value, user_id_n):
             ]
     return items_list[row_value]
 
-def insert_new_record(amount_n, comment_n, user_id_n):
-    items = Operation(amount=amount_n, comment=comment_n, user_id=user_id_n)
-    session.add(items)
+def insert_new_record(type_n, amount_n, category_n, comment_n, user_id_n, type_id_n, category_id_n): # get type.id , get category.id
+    type = Type(operation_type=type_n)
+    category = Category(operation_category=category_n, type_id=type_id_n)
+    operation = Operation(amount=amount_n, comment=comment_n, user_id=user_id_n, type_id=type_id_n, category_id=category_id_n)
+    session.add_all([operation, type, category])
     session.commit()
 
 def query_user_items(session, user_id_n):
@@ -141,9 +143,22 @@ def query_user_items(session, user_id_n):
     return items_list
 
 def query_all_items(session):
-    items = session.query(Operation).join(User).all()
+    items = session.query(User, Operation, Type, Category)\
+        .filter(User.id == Operation.user_id).filter(Operation.type_id == Type.id).filter(Operation.category_id == Category.id).all()
     items_list = [
-                [item.id, item.user.first_name, item.amount, item.comment, item.date_]
-                for item in items
+                [operation.id, user.user_name, type.operation_type, operation.amount, category.operation_category, operation.comment]
+                for user, operation, type, category in items
             ]
     return items_list
+
+def edit_user(id, f_name, l_name, u_name):
+    try:
+        editable_user = session.get(User, id)
+    except Exception as e:
+        print(f"error: {e}")
+    else:
+        editable_user.first_name = f_name
+        editable_user.last_name = l_name
+        editable_user.user_name = u_name
+    session.commit()
+    
