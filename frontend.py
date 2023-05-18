@@ -16,14 +16,15 @@ class Base(DeclarativeBase):
     pass
 
 
-# jei iseis padaryti dali funkcionalumo meniu eiluteje virsuje, pvz ten idet exit
+# tables work horribly on pysimplegui, spreadsheets needed to be used instead
 layout_left = [[sg.Button("Select User", key="-SELECT_USER-", button_color="#23277b", pad=10, size=(25, 1), font=20)],
           [sg.Button("New User", key="-NEW_USER-", button_color="#7a223f", pad=10, size=(25, 1), font=20)],
           [sg.Button("Delete User", key="-DELETE_USER-", button_color="#7a223f", pad=10, size=(25, 1), font=20)],
           [sg.Button("Edit User Info", key="-EDIT_USER-", button_color="#7a223f", pad=10, size=(25, 1), font=20)],
           [sg.Button("Show General Accounting", key="-SHOW_G_ACC-", button_color="#7a223f", pad=10, size=(25, 1), font=20)],
-          [sg.Text("", pad=(10, 90))],
-          [sg.Text("", pad=(10, 90))],
+          [sg.Button("Settings", key="-SETTINGS-", button_color="#7a223f", pad=10, size=(25, 1), font=20)],
+          [sg.Text("", pad=(10, 80))],
+          [sg.Text("", pad=(10, 80))],
           [sg.Button("Exit program", key="-EXIT-", button_color="#23277b", pad=(10, 10), size=(25, 1), font=20)]]
 
 user_list = []
@@ -35,7 +36,7 @@ headings_general = ['ID', 'User Name', 'Type', 'Amount', 'Category', 'Comment', 
 
 
 layout_user_table = [[sg.Table(values=user_items_list, headings=headings_user,
-                    auto_size_columns=True,
+                    auto_size_columns=False,
                     display_row_numbers=False,
                     justification='left',
                     num_rows=11,
@@ -48,21 +49,32 @@ layout_user_table = [[sg.Table(values=user_items_list, headings=headings_user,
                     selected_row_colors="white on black"
                     )],
             [sg.Text('ID', size=10, font=20, text_color="#b7b5b7"), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_ID-', pad=(0, 2), font=20, disabled=True)],
-            [sg.Text('Type', size=10, font=20, text_color="#b7b5b7"), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_TYPE-', pad=(0, 2), font=20, disabled=True)],
-            [sg.Text('Amount', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_AMOUNT-', pad=(0, 2), font=20)],
-            [sg.Text('Category', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_CATEGORY-', pad=(0, 2), font=20)],
-            [sg.Text('Comment', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_COMMENT-', pad=(0, 2), font=20)],
-            [sg.Text('Date', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_DATE-', pad=(0, 2), font=20)],
             [sg.Button("Edit Record", key="-CLEAR-", button_color="#23277b", pad=5, size=(25, 1), font=20),
              sg.Button("Delete Record", key="-DELETE_RECORD-", button_color="#23277b", pad=5, size=(25, 1), font=20)],
             [
-             sg.Button("Add New Record As Earnings", key="-NEW_EARNING_RECORD-", button_color="#23277b", pad=5, size=(25, 1), font=20),
-             sg.Button("Add New Record As Expenses", key="-NEW_EXPENSES_RECORD-", button_color="#23277b", pad=5, size=(25, 1), font=20)],
+             sg.Button("Add New Earnings Record", key="-NEW_EARNING_RECORD-", button_color="#23277b", pad=(5, 25), size=(25, 1), font=20),
+             sg.Button("Add New Expenses Record", key="-NEW_EXPENSES_RECORD-", button_color="#23277b", pad=(5, 25), size=(25, 1), font=20)],
             [sg.Button("Close Table", key="-CLOSE_USER_ITEMS_TABLE-", button_color="#23277b", pad=5, size=(25, 1), font=20)]
     ]
 
+layout_user_earnings = [[sg.Text('Create earnings record', font=36)],
+            [sg.Text('Amount', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_AMOUNT_EARNINGS-', pad=(0, 2), font=20)],
+            [sg.Text('Category', size=10, font=20), sg.Combo(values=bke.populate_earnings_category_combo(), enable_events=True, key='-USER_TABLE_CATEGORY_EARNINGS-', pad=(0, 2), font=20)],
+            [sg.Text('Comment', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_COMMENT_EARNINGS-', pad=(0, 2), font=20)],
+            [
+             sg.Button("Add New Record", key="-INSERT_EARNINGS_RECORD-", button_color="#23277b", pad=5, size=(25, 1), font=20)]
+    ]
+
+layout_user_spendings = [[sg.Text('Create expenses record', font=36)],
+            [sg.Text('Amount', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_AMOUNT_SPENDINGS-', pad=(0, 2), font=20)],
+            [sg.Text('Category', size=10, font=20), sg.Combo(values=bke.populate_expenses_category_combo(), enable_events=True, key='-USER_TABLE_CATEGORY_SPENDINGS-', pad=(0, 2), font=20)],
+            [sg.Text('Comment', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_COMMENT_SPENDINGS-', pad=(0, 2), font=20)],
+            [
+             sg.Button("Add New Record", key="-INSERT_EXPENSES_RECORD-", button_color="#23277b", pad=5, size=(25, 1), font=20)]
+    ]
+
 layout_general_table = [[sg.Table(values=user_items_list, headings=headings_general,
-                    auto_size_columns=True,
+                    auto_size_columns=False,
                     display_row_numbers=False,
                     justification='left',
                     num_rows=11,
@@ -74,17 +86,7 @@ layout_general_table = [[sg.Table(values=user_items_list, headings=headings_gene
                     font=20,
                     selected_row_colors="white on black"
                     )],
-            [sg.Text('ID', size=10, font=20), sg.Input(default_text="", enable_events=True, key='', pad=(0, 10), font=20, disabled=True),
-             sg.Text('Type', size=10, font=20), sg.Input(default_text="", enable_events=True, key='', pad=(0, 10), font=20)],
-            [sg.Text('Amount', size=10, font=20), sg.Input(default_text="", enable_events=True, key='', pad=(0, 10), font=20), 
-             sg.Button("Irasyti pajamas", key="", button_color="#23277b", pad=10, size=(25, 1), font=20)],
-            [sg.Text('Category', size=10, font=20), sg.Input(default_text="", enable_events=True, key='', pad=(0, 10), font=20),
-             sg.Button("Istrinti irasa", key="", button_color="#23277b", pad=10, size=(25, 1), font=20)],
-            [sg.Text('Comment', size=10, font=20), sg.Input(default_text="", enable_events=True, key='', pad=(0, 10), font=20)],
-            [sg.Text('Date', size=10, font=20), sg.Input(default_text="", enable_events=True, key='', pad=(0, 10), font=2, disabled=True)],
-            [sg.Button("Isvalyti laukus", key="", button_color="#23277b", pad=(10, 10), size=(25, 1), font=20)],
-            [sg.Button("Uzdaryti lentele", key="", button_color="#23277b", pad=10, size=(25, 1), font=20),
-             sg.Button("Create a Record", key="", button_color="#23277b", pad=10, size=(25, 1), font=20)]
+            [sg.Button("Close", key="-CLOSE5-", button_color="#23277b", pad=10, size=(25, 1), font=20)]
     ]
 
 layout_select_user = [[sg.Table(values=user_list, headings=user_list_headings,
@@ -160,6 +162,8 @@ layout = [[sg.Col(layout_left, p=0, key="_LEFT_SIDE_LAYOUT_"),
            sg.Col(layout_select_user, p=0, visible=False, key="-SELECT_USER_LAYOUT-"),
            sg.Col(layout_edit_user, p=0, visible=False, key="-EDIT_USER_LAYOUT-"),
            sg.Col(layout_new_user, p=0, visible=False, key="-NEW_USER_LAYOUT-"),
+           sg.Col(layout_user_earnings, p=0, visible=False, key="-INSERT_EARNINGS_LAYOUT-"),
+           sg.Col(layout_user_spendings, p=0, visible=False, key="-INSERT_SPENDINGS_LAYOUT-"),
            sg.Col(layout_delete_user, p=0, visible=False, key="-DELETE_USER_LAYOUT-")]]
 
 window = sg.Window("Home Accounting", layout, size=(1280, 720))
@@ -197,14 +201,17 @@ def clear_layout_user_table_inputs():
     window['-USER_TABLE_COMMENT-'].update(value="")
     window['-USER_TABLE_DATE-'].update(value="")
 
-
+def update_user_items_table():
+    window["-USER_TABLE_LAYOUT-"].update(visible=True)
+    user_items_list = bke.query_user_items(session, saved_user_id)
+    window["-USER_ITEMS_TABLE-"].update(values=user_items_list)
 
 while True:
     event, values = window.read()
 
     if event == "-NEW_USER-":
         close_all_right_windows()
-        clear_layout_user_table_inputs()
+        #clear_layout_user_table_inputs()
         window["-NEW_USER_LAYOUT-"].update(visible=True)
 
     if event == "-CREATE_USER-":
@@ -217,7 +224,7 @@ while True:
 
     if event == "-DELETE_USER-":
         close_all_right_windows()
-        clear_layout_user_table_inputs()
+        #clear_layout_user_table_inputs()
         window["-DELETE_USER_LAYOUT-"].update(visible=True)
         user_list = bke.query_user(session)
         window['-USER_DELETE_TABLE-'].update(values=user_list)
@@ -247,7 +254,7 @@ while True:
 
     if event == "-SELECT_USER-":
         close_all_right_windows()
-        clear_layout_user_table_inputs()
+        #clear_layout_user_table_inputs()
         window["-SELECT_USER_LAYOUT-"].update(visible=True)
         user_list = bke.query_user(session)
         window['-USER_LIST_TABLE-'].update(values=user_list)
@@ -256,9 +263,7 @@ while True:
         select_user_id = window['-USER_LIST_ID-'].get()
         saved_user_id = select_user_id
         close_all_right_windows()
-        window["-USER_TABLE_LAYOUT-"].update(visible=True)
-        user_items_list = bke.query_user_items(session, saved_user_id)
-        window["-USER_ITEMS_TABLE-"].update(values=user_items_list)
+        update_user_items_table()
 
     if event == "-USER_EDIT_TABLE-":
         try:
@@ -298,30 +303,43 @@ while True:
     if event == "-CLOSE4-":
         close_all_right_windows()
 
+    if event == "-CLOSE5-":
+        close_all_right_windows()
+
     if event == "-USER_ITEMS_TABLE-":
         try:
             row_value = values['-USER_ITEMS_TABLE-'][0]
             values_user_table = bke.select_from_user_listings_table(session, row_value, saved_user_id)
             window['-USER_TABLE_ID-'].update(value=values_user_table[0])
-            window['-USER_TABLE_TYPE-'].update(value=values_user_table[1])
-            window['-USER_TABLE_AMOUNT-'].update(value=values_user_table[2])
-            window['-USER_TABLE_CATEGORY-'].update(value=values_user_table[3])
-            window['-USER_TABLE_COMMENT-'].update(value=values_user_table[4])
-            window['-USER_TABLE_DATE-'].update(value=values_user_table[5])
         except IndexError:
             pass
     
 
     if event == "-NEW_EARNING_RECORD-":
-        type = window['-USER_TABLE_TYPE-'].get()
-        amount = window['-USER_TABLE_AMOUNT-'].get()
-        category = window['-USER_TABLE_CATEGORY-'].get()
-        comment = window['-USER_TABLE_COMMENT-'].get()
-        type_id = ""
-        category_id = ""     
-        bke.insert_new_record(type, amount, category, comment, saved_user_id, type_id, category_id)
-        refresh_listings_table()
-        clear_layout_user_table_inputs()
+        close_all_right_windows()
+        window["-INSERT_EARNINGS_LAYOUT-"].update(visible=True)
+
+    if event == "-INSERT_EARNINGS_RECORD-":
+        earnings_amount = window['-USER_TABLE_AMOUNT_EARNINGS-'].get()
+        earnings_category_id = window['-USER_TABLE_CATEGORY_EARNINGS-'].get()[0]
+        earnings_comment = window['-USER_TABLE_COMMENT_EARNINGS-'].get()
+        earnings_type_id = 1 # mechanically declaring, 1 for earnings, it is temporary
+        bke.insert_earnings_record(saved_user_id, earnings_type_id, earnings_amount, earnings_category_id, earnings_comment)
+        window["-INSERT_EARNINGS_LAYOUT-"].update(visible=False)
+        update_user_items_table()
+
+    if event == "-NEW_EXPENSES_RECORD-":
+        close_all_right_windows()
+        window["-INSERT_SPENDINGS_LAYOUT-"].update(visible=True)
+
+    if event == "-INSERT_EXPENSES_RECORD-":
+        spendings_amount = window['-USER_TABLE_AMOUNT_SPENDINGS-'].get()
+        spendings_category_id = window['-USER_TABLE_CATEGORY_SPENDINGS-'].get()[0]
+        spendings_comment = window['-USER_TABLE_COMMENT_SPENDINGS-'].get()
+        spendings_type_id = 2 # mechanically declaring, 2 for expenses(spendings), it is temporary
+        bke.insert_spendings_record(saved_user_id, spendings_type_id, spendings_amount, spendings_category_id, spendings_comment)
+        window["-INSERT_SPENDINGS_LAYOUT-"].update(visible=False)
+        update_user_items_table()
 
     if event == "-CLOSE_USER_ITEMS_TABLE-":
         close_all_right_windows()
@@ -331,6 +349,12 @@ while True:
         window["-GENERAL_TABLE_LAYOUT-"].update(visible=True)
         general_items_list = bke.query_all_items(session)
         window["-GENERAL_ITEMS_TABLE-"].update(values=general_items_list)
+
+
+    if event == "-DELETE_RECORD-":
+        delete_item_id = window['-USER_TABLE_ID-'].get()
+        bke.delete_item(delete_item_id)
+        update_user_items_table()
 
 
     if event == "-CLEAR-":
