@@ -37,7 +37,7 @@ class User(Base):
 class Operation(Base):
     __tablename__ = "operation"
     id = mapped_column(Integer, primary_key=True)
-    amount = mapped_column(Integer, nullable=False, default=0)
+    amount = mapped_column(Float, nullable=False, default=0)
     comment = mapped_column(String(150), nullable=False, default="")
     date_ = mapped_column(DateTime, default=datetime.today().replace(microsecond=0))
     user_id = mapped_column(Integer, ForeignKey("user.id"))
@@ -105,11 +105,17 @@ def create_user(f_name, l_name, u_name):
 
 def delete_user(session, delete_id):
     try:
-        user_on_delete = session.get(User, int(delete_id))
+        count_on_delete = session.query(Operation).filter(Operation.user_id == delete_id).count()
+        for item in range(count_on_delete):
+            item = session.query(Operation).filter(Operation.user_id == delete_id).first()
+            session.delete(item)
+        #session.delete(user_on_delete)
+        user_on_delete = session.query(User).filter(User.id == delete_id).first()
         session.delete(user_on_delete)
         session.commit()
     except Exception as e:
         print(f"Error: {e}")
+
 
 def select_from_user_list_table(session, row_value):
     items = session.query(User).all()
@@ -182,7 +188,7 @@ def insert_spendings_record(saved_user_id, spendings_type_id, spendings_amount, 
 
 def delete_item(delete_id):
     try:
-        item_on_delete = session.get(Operation, int(delete_id))
+        item_on_delete = session.query(Operation).filter(Operation.id == delete_id).first()
         session.delete(item_on_delete)
         session.commit()
     except Exception as e:
