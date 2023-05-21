@@ -1,10 +1,8 @@
 # libraries
 
 import PySimpleGUI as sg
-from datetime import datetime
-from typing import Any
-from sqlalchemy import create_engine, Integer, String, Float, DateTime, Table, Column, ForeignKey
-from sqlalchemy.orm import sessionmaker, DeclarativeBase, mapped_column, Session, relationship
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
 import backend as bke
 
 # creating db and declaring session
@@ -59,7 +57,7 @@ layout_user_table = [[sg.Table(values=user_items_list, headings=headings_user,
 
 layout_user_earnings = [[sg.Text('Create earnings record', font=36)],
             [sg.Text('Amount', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_AMOUNT_EARNINGS-', pad=(0, 2), font=20)],
-            [sg.Text('Category', size=10, font=20), sg.Combo(values=bke.populate_earnings_category_combo(), enable_events=True, key='-USER_TABLE_CATEGORY_EARNINGS-', pad=(0, 2), font=20)],
+            [sg.Text('Category', size=10, font=20), sg.Combo(values=bke.populate_combo_with_categories("earnings"), enable_events=True, key='-USER_TABLE_CATEGORY_EARNINGS-', pad=(0, 2), font=20)],
             [sg.Text('Comment', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_COMMENT_EARNINGS-', pad=(0, 2), font=20)],
             [
              sg.Button("Add New Record", key="-INSERT_EARNINGS_RECORD-", button_color="#23277b", pad=5, size=(25, 1), font=20)]
@@ -67,7 +65,7 @@ layout_user_earnings = [[sg.Text('Create earnings record', font=36)],
 
 layout_user_spendings = [[sg.Text('Create expenses record', font=36)],
             [sg.Text('Amount', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_AMOUNT_SPENDINGS-', pad=(0, 2), font=20)],
-            [sg.Text('Category', size=10, font=20), sg.Combo(values=bke.populate_expenses_category_combo(), enable_events=True, key='-USER_TABLE_CATEGORY_SPENDINGS-', pad=(0, 2), font=20)],
+            [sg.Text('Category', size=10, font=20), sg.Combo(values=bke.populate_combo_with_categories("expenses"), enable_events=True, key='-USER_TABLE_CATEGORY_SPENDINGS-', pad=(0, 2), font=20)],
             [sg.Text('Comment', size=10, font=20), sg.Input(default_text="", enable_events=True, key='-USER_TABLE_COMMENT_SPENDINGS-', pad=(0, 2), font=20)],
             [
              sg.Button("Add New Record", key="-INSERT_EXPENSES_RECORD-", button_color="#23277b", pad=5, size=(25, 1), font=20)]
@@ -156,7 +154,7 @@ layout_delete_user = [[sg.Table(values=user_list, headings=user_list_headings,
                     sg.Button("Cancel", key="-CLOSE3-", button_color="#23277b", pad=10, size=(25, 1), font=20)]
 ]
 
-layout = [[sg.Col(layout_left, p=0, key="_LEFT_SIDE_LAYOUT_"), 
+main_layout = [[sg.Col(layout_left, p=0, key="_LEFT_SIDE_LAYOUT_"), 
            sg.Col(layout_user_table, p=0, visible=False, key="-USER_TABLE_LAYOUT-"),
            sg.Col(layout_general_table, p=0, visible=False, key="-GENERAL_TABLE_LAYOUT-"), 
            sg.Col(layout_select_user, p=0, visible=False, key="-SELECT_USER_LAYOUT-"),
@@ -166,7 +164,7 @@ layout = [[sg.Col(layout_left, p=0, key="_LEFT_SIDE_LAYOUT_"),
            sg.Col(layout_user_spendings, p=0, visible=False, key="-INSERT_SPENDINGS_LAYOUT-"),
            sg.Col(layout_delete_user, p=0, visible=False, key="-DELETE_USER_LAYOUT-")]]
 
-window = sg.Window("Home Accounting", layout, size=(1280, 720))
+window = sg.Window("Home Accounting", main_layout, size=(1280, 720))
 
 
 
@@ -309,7 +307,7 @@ while True:
     if event == "-USER_ITEMS_TABLE-":
         try:
             row_value = values['-USER_ITEMS_TABLE-'][0]
-            values_user_table = bke.select_from_user_listings_table(session, row_value, saved_user_id)
+            values_user_table = bke.select_from_operations_table(session, row_value, saved_user_id)
             window['-USER_TABLE_ID-'].update(value=values_user_table[0])
         except IndexError:
             pass
@@ -324,7 +322,7 @@ while True:
         earnings_category_id = window['-USER_TABLE_CATEGORY_EARNINGS-'].get()[0]
         earnings_comment = window['-USER_TABLE_COMMENT_EARNINGS-'].get()
         earnings_type_id = 1 # mechanically declaring, 1 for earnings, it is temporary
-        bke.insert_earnings_record(saved_user_id, earnings_type_id, earnings_amount, earnings_category_id, earnings_comment)
+        bke.insert_record(saved_user_id, earnings_type_id, earnings_amount, earnings_category_id, earnings_comment)
         window["-INSERT_EARNINGS_LAYOUT-"].update(visible=False)
         update_user_items_table()
 
@@ -337,7 +335,7 @@ while True:
         spendings_category_id = window['-USER_TABLE_CATEGORY_SPENDINGS-'].get()[0]
         spendings_comment = window['-USER_TABLE_COMMENT_SPENDINGS-'].get()
         spendings_type_id = 2 # mechanically declaring, 2 for expenses(spendings), it is temporary
-        bke.insert_spendings_record(saved_user_id, spendings_type_id, spendings_amount, spendings_category_id, spendings_comment)
+        bke.insert_record(saved_user_id, spendings_type_id, spendings_amount, spendings_category_id, spendings_comment)
         window["-INSERT_SPENDINGS_LAYOUT-"].update(visible=False)
         update_user_items_table()
 
@@ -353,7 +351,7 @@ while True:
 
     if event == "-DELETE_RECORD-":
         delete_item_id = window['-USER_TABLE_ID-'].get()
-        bke.delete_item(delete_item_id)
+        bke.delete_record(delete_item_id)
         update_user_items_table()
 
 

@@ -1,7 +1,6 @@
 # libraries
-from typing import Any
-from sqlalchemy import create_engine, Integer, String, Float, DateTime, Table, Column, ForeignKey
-from sqlalchemy.orm import sessionmaker, DeclarativeBase, mapped_column, Session, relationship
+from sqlalchemy import create_engine, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy.orm import sessionmaker, DeclarativeBase, mapped_column, relationship
 from datetime import datetime
 
 # declarative base
@@ -22,12 +21,6 @@ class User(Base):
     last_name = mapped_column(String(50), nullable=False)
     user_name = mapped_column(String(50), nullable=False)
     operation = relationship("Operation", back_populates="user")
-
-    ## Not nessesary if Base used
-    # def __init__(self, **kw: Any):
-    #     # super().__init__(**kw)
-    #     for key, value in kw.items():
-    #         setattr(self, key, value)
 
     def __repr__(self):
         return f"({self.id}, {self.first_name}, {self.last_name}, {self.user_name})"
@@ -61,6 +54,7 @@ class Type(Base):
 
     def __repr__(self):
         return f"({self.id}, {self.operation_type})"
+    
 
 # Category table (taxes, grocery store spendings, fuel etc.)
 class Category(Base):
@@ -77,17 +71,7 @@ class Category(Base):
 
 Base.metadata.create_all(engine)
 
-
-
 ###### Actions with db tables
-
-
-# def populate_type_db_table(session):
-#     earnings = Type(operation_type="Earnings")
-#     expenses = Type(operation_type="Expenses")
-#     session.add(earnings)
-#     session.add(expenses)
-#     session.commit()
 
 
 def query_user(session):
@@ -125,7 +109,7 @@ def select_from_user_list_table(session, row_value):
             ]
     return items_list[row_value]
 
-def select_from_user_listings_table(session, row_value, user_id_n):
+def select_from_operations_table(session, row_value, user_id_n):
     items = session.query(Operation).filter_by(user_id=user_id_n)
     items_list = [
                 [item.id, item.amount, item.comment, item.date_]
@@ -150,53 +134,33 @@ def query_all_items(session):
             ]
     return items_list
 
-def edit_user(id, f_name, l_name, u_name):
+def edit_user(id, first_name, last_name, user_name):
     try:
         editable_user = session.get(User, id)
     except Exception as e:
-        print(f"error: {e}")
+        print(f"error on editing: {e}")
     else:
-        editable_user.first_name = f_name
-        editable_user.last_name = l_name
-        editable_user.user_name = u_name
+        editable_user.first_name = first_name
+        editable_user.last_name = last_name
+        editable_user.user_name = user_name
     session.commit()
 
-
-def populate_earnings_category_combo():
+def populate_combo_with_categories(type_name):
     result = session.query(Category.id, Category.operation_category)\
                 .join(Type)\
-                .filter(Type.operation_type == "earnings")\
+                .filter(Type.operation_type == type_name)\
                 .all()
     return result
 
-def populate_expenses_category_combo():
-    result = session.query(Category.id, Category.operation_category)\
-                .join(Type)\
-                .filter(Type.operation_type == "expenses")\
-                .all()
-    return result
-
-def insert_earnings_record(saved_user_id, earnings_type_id, earnings_amount, earnings_category_id, earnings_comment):
-    operation = Operation(amount=earnings_amount, comment=earnings_comment, user_id=saved_user_id, type_id=earnings_type_id, category_id=earnings_category_id)
+def insert_record(saved_user_id, type_id, amount, category_id, comment):
+    operation = Operation(amount=amount, comment=comment, user_id=saved_user_id, type_id=type_id, category_id=category_id)
     session.add(operation)
     session.commit()
 
-def insert_spendings_record(saved_user_id, spendings_type_id, spendings_amount, spendings_category_id, spendings_comment):
-    operation = Operation(amount=spendings_amount, comment=spendings_comment, user_id=saved_user_id, type_id=spendings_type_id, category_id=spendings_category_id)
-    session.add(operation)
-    session.commit()
-
-def delete_item(delete_id):
+def delete_record(delete_id):
     try:
-        item_on_delete = session.query(Operation).filter(Operation.id == delete_id).first()
-        session.delete(item_on_delete)
+        record_on_delete = session.query(Operation).filter(Operation.id == delete_id).first()
+        session.delete(record_on_delete)
         session.commit()
     except Exception as e:
-        print(f"Error: {e}")
-
-# def insert_new_record(type_n, amount_n, category_n, comment_n, user_id_n, type_id_n, category_id_n): # get type.id , get category.id
-#     type = Type(operation_type=type_n) # no need
-#     category = Category(operation_category=category_n, type_id=type_id_n) # no need
-#     operation = Operation(amount=amount_n, comment=comment_n, user_id=user_id_n, type_id=type_id_n, category_id=category_id_n)
-#     session.add_all([operation, type, category])
-#     session.commit()
+        print(f"Error on deleting record: {e}")
