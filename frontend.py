@@ -177,6 +177,8 @@ def close_all_right_windows():
     window["-EDIT_USER_LAYOUT-"].update(visible=False)
     window["-USER_TABLE_LAYOUT-"].update(visible=False)
     window["-DELETE_USER_LAYOUT-"].update(visible=False)
+    window["-INSERT_EARNINGS_LAYOUT-"].update(visible=False)
+    window["-INSERT_SPENDINGS_LAYOUT-"].update(visible=False)
     
 
 def refresh_user_table():
@@ -218,6 +220,7 @@ while True:
         user_name = window['-NEW_USER_NAME-'].get()
         bke.create_user(first_name, last_name, user_name)
         window["-NEW_USER_LAYOUT-"].update(visible=False)
+        sg.popup_ok(f"New user has been successfully created")
 
 
     if event == "-DELETE_USER-":
@@ -230,11 +233,13 @@ while True:
     if event == "-DELETE_USER_FROM_LIST-":
         try:
             del_id = window['-DELETE_ID-'].get()
-            bke.delete_user(session, del_id)
-            refresh_delete_table()
-            sg.popup_notify(f"User (ID: {del_id}) and their records are successfully deleted from list")
+            ask_delete_user = sg.popup_yes_no(f"Do you really want to delete selected user and their records from list? (ID: {del_id})")
+            if ask_delete_user == "Yes":
+                bke.delete_user(session, del_id)
+                refresh_delete_table()
+                sg.popup_ok(f"User (ID: {del_id}) and their records are successfully deleted from list")
         except Exception as e:
-            print(e)
+            print(f"Delete user from list error: {e}")
             pass
 
 
@@ -247,7 +252,7 @@ while True:
             window['-USER_LIST_L_NAME-'].update(value=values[2])
             window['-USER_LIST_USER_NAME-'].update(value=values[3])
         except Exception as e:
-            print(e)
+            print(f"User list table table error: {e}")
             pass
 
     if event == "-SELECT_USER-":
@@ -272,7 +277,7 @@ while True:
             window['-USER_EDIT_L_NAME-'].update(value=values[2])
             window['-USER_EDIT_USER_NAME-'].update(value=values[3])
         except Exception as e:
-            print(e)
+            print(f"User edit table error: {e}")
             pass
 
     if event == "-EDIT_USER-":
@@ -350,10 +355,16 @@ while True:
 
 
     if event == "-DELETE_RECORD-":
-        delete_item_id = window['-USER_TABLE_ID-'].get()
-        bke.delete_record(delete_item_id)
-        update_user_items_table()
-
+        try:
+            delete_item_id = window['-USER_TABLE_ID-'].get()
+            ask_delete_record = sg.popup_yes_no(f"Do you really want to delete selected record? (ID: {delete_item_id})")
+            if ask_delete_record == "Yes":
+                bke.delete_record(delete_item_id)
+                update_user_items_table()
+                sg.popup_ok(f"Record (ID: {delete_item_id}) is successfully deleted")
+        except Exception as e:
+            print(f"Delete record error: {e}")
+            pass
 
     if event == "-CLEAR-":
         pass
